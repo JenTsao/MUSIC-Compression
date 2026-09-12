@@ -51,7 +51,7 @@ def main():
     args = parser.parse_args()
 
     if not check_ffmpeg():
-        print('错误：未找到 ffmpeg/ffprobe，请先安装 ffmpeg 并加入 PATH。')
+        print('错误：未找到 ffmpeg，请先安装 ffmpeg 并加入 PATH。')
         sys.exit(1)
 
     roots = [r.resolve() for r in args.input_dirs]

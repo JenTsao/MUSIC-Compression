@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
@@ -14,9 +15,21 @@ SUPPORTED_EXTS = {'.mp3', '.flac', '.wav', '.m4a', '.aac', '.ogg', '.wma'}
 CREATE_NO_WINDOW = 0x08000000 if os.name == 'nt' else 0
 
 
+def ffmpeg_exe() -> str:
+    """打包运行时优先使用 exe 同目录下自带的 ffmpeg.exe，否则走 PATH。"""
+    if getattr(sys, 'frozen', False):
+        cand = Path(sys.executable).parent / 'ffmpeg.exe'
+        if cand.is_file():
+            return str(cand)
+    return 'ffmpeg'
+
+
 def check_ffmpeg() -> bool:
     """检查 ffmpeg 是否可用。"""
-    return shutil.which('ffmpeg') is not None
+    exe = ffmpeg_exe()
+    if os.path.isfile(exe):
+        return True
+    return shutil.which(exe) is not None
 
 
 def safe_name(name: str, keep_unicode: bool = False, max_len: int = 80) -> str:
@@ -188,7 +201,8 @@ def run_ffmpeg(task: Task, opts: JobOptions, threads: int = 0):
     dst.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = [
-        'ffmpeg', '-hide_banner', '-loglevel', 'error', '-nostdin',
+        ffmpeg_exe(),
+        '-hide_banner', '-loglevel', 'error', '-nostdin',
         '-y' if opts.overwrite else '-n',
         '-i', str(src),
         '-map', '0:a:0',                       # 只取第一个音频流，避免封面导致兼容问题

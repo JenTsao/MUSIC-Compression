@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         if not check_ffmpeg():
             QMessageBox.critical(
                 self, '缺少 ffmpeg',
-                '未找到 ffmpeg/ffprobe。\n请安装 ffmpeg 并加入 PATH 后重启程序。'
+                '未找到 ffmpeg。\n请安装 ffmpeg 并加入 PATH 后重启程序。'
             )
 
     def _collect_roots(self) -> list:

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# CI / ffmpeg 临时目录
+bundle/
+ffmpeg_tmp/
+ffmpeg*.zip
+MP3Compressor-windows-x64.zip
+
+# IDE
+.idea/
+.vscode/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+
+# 输出目录（压缩结果，不应入库）
+compressed_huawei/
