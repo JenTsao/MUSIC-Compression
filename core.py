@@ -1,7 +1,6 @@
 """压缩核心逻辑：扫描、任务规划、ffmpeg 调用。CLI 与 GUI 共用。"""
 
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -27,20 +26,6 @@ def ffmpeg_exe() -> str:
 def check_ffmpeg() -> bool:
     """检查 ffmpeg 是否可用。"""
     return shutil.which(ffmpeg_exe()) is not None
-
-
-def safe_name(name: str, keep_unicode: bool = False, max_len: int = 80) -> str:
-    """生成华为兼容的安全文件名。默认只保留 ASCII 字母数字下划线连字符。"""
-    stem = Path(name).stem.replace(' ', '_')
-
-    if keep_unicode:
-        stem = re.sub(r'[^A-Za-z0-9_\-\u4e00-\u9fff]', '_', stem)
-    else:
-        stem = stem.encode('ascii', 'ignore').decode('ascii')
-        stem = re.sub(r'[^A-Za-z0-9_\-]', '_', stem)
-
-    stem = re.sub(r'_+', '_', stem).strip('_')[:max_len]
-    return (stem or 'audio') + '.mp3'
 
 
 def unique_path(path: Path, used: set, avoid_existing: bool = True) -> Path:
@@ -129,7 +114,6 @@ class JobOptions:
     jobs: int = os.cpu_count() or 4
     keep_tree: bool = False
     overwrite: bool = False
-    keep_unicode: bool = False
 
 
 @dataclass
@@ -145,7 +129,7 @@ def plan_tasks(files: list, roots: list, opts: JobOptions) -> list:
     used_paths = set()
     tasks = []
 
-    for idx, src in enumerate(files, 1):
+    for src in files:
         root = None
         for r in roots:
             r = Path(r)
@@ -157,23 +141,10 @@ def plan_tasks(files: list, roots: list, opts: JobOptions) -> list:
                 continue
 
         if opts.keep_tree and root and root.is_dir():
-            parts = []
-            for part in src.relative_to(root).parts[:-1]:
-                if opts.keep_unicode:
-                    safe_part = re.sub(r'[^A-Za-z0-9_\-\u4e00-\u9fff]', '_', part)
-                else:
-                    safe_part = re.sub(
-                        r'[^A-Za-z0-9_\-]', '_',
-                        part.encode('ascii', 'ignore').decode('ascii')
-                    )
-                parts.append(safe_part.strip('_') or 'dir')
-
-            dst = output_dir.joinpath(*parts, safe_name(src.name, opts.keep_unicode))
+            parts = src.relative_to(root).parts[:-1]
+            dst = output_dir.joinpath(*parts, src.stem + '.mp3')
         else:
-            base = safe_name(src.name, opts.keep_unicode)
-            if base == 'audio.mp3' or not re.search(r'[A-Za-z0-9]', Path(base).stem):
-                base = f'{idx:04d}_{base}'
-            dst = output_dir / base
+            dst = output_dir / (src.stem + '.mp3')
 
         dst = unique_path(dst, used_paths, avoid_existing=not opts.overwrite)
         try:

@@ -91,7 +91,6 @@ class Worker(QThread):
                 jobs=preset['jobs'],
                 keep_tree=preset['keep_tree'],
                 overwrite=preset['overwrite'],
-                keep_unicode=preset['keep_unicode'],
             )
             tasks = plan_tasks(files, roots, opts)
 
@@ -198,8 +197,7 @@ class MainWindow(QMainWindow):
         h = QHBoxLayout()
         self.chk_keep_tree = QCheckBox('保持目录结构')
         self.chk_overwrite = QCheckBox('覆盖已存在文件')
-        self.chk_unicode = QCheckBox('文件名保留中文')
-        for c in (self.chk_keep_tree, self.chk_overwrite, self.chk_unicode):
+        for c in (self.chk_keep_tree, self.chk_overwrite):
             h.addWidget(c)
         h.addStretch()
         form.addRow('选项：', h)
@@ -296,7 +294,6 @@ class MainWindow(QMainWindow):
             'jobs': self.spn_jobs.value(),
             'keep_tree': self.chk_keep_tree.isChecked(),
             'overwrite': self.chk_overwrite.isChecked(),
-            'keep_unicode': self.chk_unicode.isChecked(),
             'exclude_dirs': parse_keywords(self.edt_exclude_dirs.text()),
             'include_kw': parse_keywords(self.edt_include.text()),
             'exclude_kw': parse_keywords(self.edt_exclude.text()),
