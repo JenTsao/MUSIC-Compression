@@ -26,10 +26,7 @@ def ffmpeg_exe() -> str:
 
 def check_ffmpeg() -> bool:
     """检查 ffmpeg 是否可用。"""
-    exe = ffmpeg_exe()
-    if os.path.isfile(exe):
-        return True
-    return shutil.which(exe) is not None
+    return shutil.which(ffmpeg_exe()) is not None
 
 
 def safe_name(name: str, keep_unicode: bool = False, max_len: int = 80) -> str:
